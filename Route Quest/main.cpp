@@ -7,8 +7,8 @@ signed main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    freopen("tc/input_2.txt", "r", stdin);
-    freopen("output/output_2.txt", "w", stdout);
+    freopen("input/input_1.txt", "r", stdin);
+    freopen("output/output1.txt", "w", stdout);
 
     readInput();
     computeAllPairsShortestPath();
