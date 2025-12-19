@@ -79,6 +79,29 @@ n1 n2 n3 ... nL
 * Second line: `L` space-separated node indices representing the full route of the vehicle
 
 ---
+## Example
+
+### Example Input
+
+```text
+2 6 5 1 10
+0 3
+4 5
+2
+0 1 4
+1 2 3
+2 3 2
+1 4 5
+3 5 3
+```
+
+### Example Output
+
+```text
+9
+0 1 2 3 5 3 2 1 4
+```
+---
 
 ## Project Structure
 
@@ -181,42 +204,17 @@ The solver attempts to build a valid route by:
 1. Trying **each Hub as a starting point**
 2. From the current node, greedily selecting the **nearest valid target**
 
-A node is considered a valid candidate if:
+A node is considered a valid target if:
 
 * It is an **unvisited Hub**, or
 * It is a **House whose corresponding Hub has already been visited**
-
-And additionally:
-
 * The node is reachable with the **current fuel**
-* From that node, it is still possible to reach a **Fuel Station** (to avoid dead ends)
 
 If no Hub or House is reachable, the vehicle travels to the **nearest Fuel Station** to refuel.
 
 ---
 
 
-## Example
 
-### Example Input
-
-```text
-2 6 5 1 10
-0 3
-4 5
-2
-0 1 4
-1 2 3
-2 3 2
-1 4 5
-3 5 3
-```
-
-### Example Output
-
-```text
-9
-0 1 2 3 5 3 2 1 4
-```
 
 
