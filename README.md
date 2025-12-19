@@ -2,65 +2,81 @@
 
 ## Overview
 
-This project solves a **fuel-constrained delivery routing problem** on a city map represented as a **weighted undirected graph**. A single delivery vehicle must pick up packages from designated **Hubs** and deliver them to corresponding **Houses**, while respecting fuel limitations and refueling constraints.
+This project addresses the problem of planning a **single delivery route** for a vehicle operating in a city while satisfying **delivery precedence** and **fuel constraints**. The objective is to compute a valid route that completes all deliveries and minimizes total travel distance.
 
-The objective is to compute a **valid route with minimum total travel distance** that completes all deliveries.
+The city is modeled as an **undirected weighted graph**, where:
 
----
+* **Nodes** represent locations such as delivery hubs, destination houses, fuel stations, or intersections
+* **Edges** represent roads with an associated fuel cost
+* The vehicle has a fuel tank of limited capacity **F** and starts with a **full tank**
+* **Fuel stations** are special nodes where the vehicle can refuel back to full capacity
 
-## Problem Description
+Each delivery consists of a pair ((hub_i, house_i)), where a package must be picked up from `hub_i` and delivered to `house_i`. A route is considered valid if it satisfies all of the following conditions:
 
-Each delivery consists of:
+* **House Coverage**: Every destination house is visited at least once
+* **Delivery Precedence**: For each pair ((hub_i, house_i)), the **last visit** to `house_i` occurs **after at least one visit** to `hub_i`
+* **Fuel Constraints**:
 
-* A **Hub** node where a package must be picked up
-* A **House** node where that package must be delivered
+  * Fuel level never drops below zero
+  * Refueling is allowed only at designated fuel station nodes
+  * Refueling always restores the tank to full capacity
+* **Route Rules**:
 
-### Constraints
+  * Only edges provided in the input graph may be traversed
+  * Nodes may be visited multiple times
+  * The route may start and end at any node
 
-* **Precedence Constraint**
-  A package must be picked up from its Hub *before* it can be delivered to its House.
-
-* **Fuel Constraint**
-  The vehicle has a fixed **maximum fuel capacity**. Traveling along an edge consumes fuel equal to the edge weight.
-
-* **Refueling Constraint**
-  The vehicle can refuel to full capacity **only** at designated **Fuel Stations**.
-
-* **Optimization Goal**
-  Minimize the **total distance traveled** while completing all deliveries.
+The solution implemented in this project constructs such a route while ensuring feasibility under all constraints.
 
 ---
 
 ## Input Format
 
-The input is read from a file (e.g., `input/input_1.txt`) with the following structure:
-
 ```text
-n t m k fuelCapacity
-h[0] h[1] ... h[n-1]        // n hub node indices
-d[0] d[1] ... d[n-1]        // n destination (house) node indices
-fs[0] fs[1] ... fs[k-1]     // k fuel station node indices
-m lines of: u v w           // bidirectional edge between u and v with weight w
+N T M K F
+H1 H2 ... HN
+D1 D2 ... DN
+S1 S2 ... SK
+u1 v1 c1
+u2 v2 c2
+...
+uM vM cM
 ```
 
 ### Parameters
 
-* `n` : Number of deliveries (hub–house pairs)
-* `t` : Total number of nodes in the graph (indexed `0` to `t-1`)
-* `m` : Number of edges
-* `k` : Number of fuel stations
-* `fuelCapacity` : Maximum fuel the vehicle can hold
+* `N` : Number of deliveries
+
+* `T` : Total number of nodes in the graph
+
+* `M` : Number of roads (edges)
+
+* `K` : Number of fuel stations
+
+* `F` : Fuel tank capacity
+
+* `H1..HN` : Node indices of delivery hubs
+
+* `D1..DN` : Node indices of destination houses
+
+* `S1..SK` : Node indices of fuel stations
+
+* Each of the next `M` lines contains:
+  `u v c` — an undirected edge between nodes `u` and `v` with fuel cost `c`
+
+All node indices lie in the range `0` to `T-1`.
 
 ---
 
 ## Output Format
 
-The output is written to a file (e.g., `output/output1.txt`) in the following format:
-
 ```text
-<length of the path>
-<space-separated sequence of node indices representing the full route>
+L
+n1 n2 n3 ... nL
 ```
+
+* `L` : Length of the route (number of nodes visited)
+* Second line: `L` space-separated node indices representing the full route of the vehicle
 
 ---
 
@@ -68,15 +84,15 @@ The output is written to a file (e.g., `output/output1.txt`) in the following fo
 
 ```text
 ├── include/
-│   ├── common.h          // Common includes, macros, and type definitions
+│   ├── Common.h          // Common includes, macros, and type definitions
 │   ├── FloydWarshall.h   // Headers for shortest path algorithms
 │   ├── Fuel.h            // Headers for fuel management logic
-│   ├── input.h           // Headers for input reading and global variables
+│   ├── Input.h           // Headers for input reading and global variables
 │   └── Solver.h          // Headers for the main solving logic
 ├── src/
 │   ├── FloydWarshall.cpp // Implementation of Floyd-Warshall algorithm
 │   ├── Fuel.cpp          // Implementation of fuel feasibility checks
-│   ├── input.cpp         // Implementation of input parsing
+│   ├── Input.cpp         // Implementation of input parsing
 │   └── Solver.cpp        // Implementation of the greedy heuristic solver
 ├── input/
 │   ├── input_0.txt
@@ -107,13 +123,13 @@ freopen("output/output1.txt", "w", stdout);
 Use a C++ compiler with C++17 support:
 
 ```bash
-g++ -std=c++17 -Iinclude main.cpp src/*.cpp -o solution
+g++ -std=c++17 -Iinclude main.cpp src/*.cpp -o solver
 ```
 
 ### Step 3: Run
 
 ```bash
-./solution
+./solver
 ```
 
 ---
@@ -179,24 +195,28 @@ If no Hub or House is reachable, the vehicle travels to the **nearest Fuel Stati
 
 ---
 
-## Constraints Handled
 
-* **Dependency Management**
-  Ensures a House is only visited after its corresponding Hub has been visited.
+## Example
 
-* **Fuel Management**
-  Fuel is decremented on every move and reset to `fuelCapacity` upon visiting a Fuel Station.
+### Example Input
 
-* **Path Continuity**
-  Uses precomputed shortest paths to generate the exact step-by-step route.
+```text
+2 6 5 1 10
+0 3
+4 5
+2
+0 1 4
+1 2 3
+2 3 2
+1 4 5
+3 5 3
+```
 
----
+### Example Output
 
-## Output Description
+```text
+9
+0 1 2 3 5 3 2 1 4
+```
 
-The program outputs:
 
-* The **total number of nodes** in the final route
-* The **ordered list of node IDs** representing the complete delivery path
-
-This route satisfies all constraints while aiming to minimize the total travel cost.
